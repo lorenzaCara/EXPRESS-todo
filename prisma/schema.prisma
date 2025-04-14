@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model List {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  favorite    Boolean  @default(false)
+  //per esprimere la relazione tra i due modelli
+  items       Item[]
+  createdAt   DateTime @default(now())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) //relazione 1/N va sempre su N 
+}
+
+model Item {
+  id      Int     @id @default(autoincrement())
+  label   String
+  checked Boolean @default(false)
+  //per esprimere la relazione tra i due modelli
+  List    List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId  Int
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  createdAt     DateTime  @default(now()) //created at solitamente viene inserito in quasi tutte le tabelle
+  List          List[]
+  recovery_code String?
+  recovery_date DateTime?
+  profileImage  String?
+}
+
+//quando aggiungo un campo obbligatorio, è meglio inserire prima un campo come opzionale, andare ad aggiustare i dati nel db e poi renderlo obbligatorio
